@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Pruebas de Vida y Verificación de Identidad - Grupo 4</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- BANNER DE COMPATIBILIDAD WEBRTC Y CANVAS -->
+  <div id="bannerCompatibilidad" class="banner-info">
+    Verificando compatibilidad de hardware y navegador...
+  </div>
+
+  <!-- ENCABEZADO -->
+  <header>
+    <h1>Sistema de Pruebas de Vida (Liveness Detection)</h1>
+    <p>Proyecto Final de Ingeniería de Software - Grupo 4 | CASATIC / UGB</p>
+  </header>
+
+  <!-- ACCESO ADMINISTRATIVO (historial, usuarios y reportes requieren JWT) -->
+  <div style="background:#0f2a47;color:#fff;padding:8px 16px;display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;font-size:13px;">
+    <span id="estadoSesion">Acceso administrativo</span>
+    <form id="formLogin" style="display:flex;gap:6px;align-items:center;margin:0;">
+      <input id="loginEmail" type="email" placeholder="correo" required autocomplete="username" style="padding:5px 8px;border-radius:4px;border:0;">
+      <input id="loginPassword" type="password" placeholder="contraseña" required autocomplete="current-password" style="padding:5px 8px;border-radius:4px;border:0;">
+      <button type="submit" style="margin:0;padding:6px 12px;">Entrar</button>
+    </form>
+    <button id="btnLogout" type="button" class="btn-secondary" style="display:none;margin:0;padding:6px 12px;">Cerrar sesión</button>
+  </div>
+
+  <!-- MENÚ DE NAVEGACIÓN -->
+  <nav>
+    <a href="#inicio" class="nav-activo">Inicio</a>
+    <a href="#verificacion">Verificación</a>
+    <a href="#historial">Historial</a>
+    <a href="#usuarios">Usuarios</a>
+    <a href="#reportes">Reportes</a>
+  </nav>
+
+  <main>
+    <!-- 1. SECCIÓN INICIO -->
+    <section id="inicio" class="seccion-activa">
+      <h2>Bienvenido al Sistema de Verificación Biométrica</h2>
+      <p>
+        Esta plataforma permite comprobar en tiempo real que una persona está físicamente presente frente a su dispositivo
+        y validar que su rostro coincide con su documento oficial (DUI o Pasaporte), previniendo suplantaciones con fotos impresas,
+        pantallas o máscaras.
+      </p>
+
+      <div style="background: #f8fafc; border-left: 4px solid #194e82; padding: 16px; margin: 20px 0; border-radius: 4px;">
+        <h4 style="margin: 0 0 8px; color: #194e82;">Garantías de Seguridad y Privacidad (GDPR)</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #475569;">
+          <li>Cifrado en tránsito (TLS 1.2+) y en reposo (AES-256).</li>
+          <li>Retención temporal parametrizada (30 días máximos antes de purga automática).</li>
+          <li>Consentimiento informado previo a la captura de rasgos biométricos.</li>
+          <li>Registro inmutable de auditoría para trazabilidad bancaria y legal.</li>
+        </ul>
+      </div>
+
+      <a class="boton" href="#verificacion">Iniciar Nueva Verificación</a>
+    </section>
+
+    <!-- 2. SECCIÓN VERIFICACIÓN -->
+    <section id="verificacion">
+      <h2>Verificación de Identidad y Prueba de Vida</h2>
+
+      <!-- PASO 1: DATOS Y DOCUMENTO -->
+      <div id="paso1Container">
+        <p><strong>Paso 1:</strong> Ingresa tus datos oficiales y adjunta una fotografía legible de tu documento de identidad (DUI o Pasaporte).</p>
+        
+        <form id="formNuevaSolicitud" style="max-width: 520px;">
+          <div class="form-group">
+            <label for="inputNombre">Nombre Completo (según documento)</label>
+            <input type="text" id="inputNombre" required placeholder="Ej: Carlos Eduardo Mendoza" value="Carlos Eduardo Mendoza">
+          </div>
+
+          <div style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="selectTipoDoc">Tipo de Documento</label>
+              <select id="selectTipoDoc">
+                <option value="DUI" selected>DUI (El Salvador)</option>
+                <option value="PASAPORTE">Pasaporte</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1.5;">
+              <label for="inputNumDoc">Número de Documento</label>
+              <input type="text" id="inputNumDoc" required placeholder="00000000-0" value="05123456-7">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputDocumento">Fotografía del Documento Oficial (JPG, PNG)</label>
+            <input type="file" id="inputDocumento" accept="image/*">
+            <div id="docPreviewContainer" class="doc-preview-box">
+              <p style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Vista previa del documento:</p>
+              <img id="docPreviewImg" alt="Vista previa de documento">
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: flex-start; gap: 8px;">
+            <input type="checkbox" id="chkConsentimiento" required checked style="width: auto; margin-top: 4px;">
+            <label for="chkConsentimiento" style="font-size: 12px; font-weight: normal; color: #475569;">
+              Doy mi consentimiento explícito para el procesamiento temporal de mis datos biométricos con fines exclusivos de validación de identidad.
+            </label>
+          </div>
+
+          <button type="submit" id="btnCrearSolicitud">Continuar a Verificación</button>
+        </form>
+      </div>
+
+      <!-- PASO 2: CÁMARA Y RETOS BIOMÉTRICOS -->
+      <div id="paso2Container" style="display: none; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 10px 16px; border-radius: 6px; margin-bottom: 15px;">
+          <span style="font-size: 14px; font-weight: 600; color: #0369a1;">
+            Solicitud Activa: <code id="solicitudActivaCodigo">-</code>
+          </span>
+          <span class="badge-estado estado-en_proceso">En Proceso</span>
+        </div>
+
+        <p><strong>Paso 2:</strong> Centra tu rostro en el óvalo y sigue las instrucciones en pantalla.</p>
+
+        <!-- VIEWPORT DE CÁMARA CON OVERLAY OVALADO -->
+        <div class="camara-wrapper">
+          <div class="camara-viewport">
+            <video id="video" autoplay muted playsinline></video>
+            <p id="mensajeCamara">La cámara está apagada.</p>
+            
+            <!-- OVERLAY GUÍA FACIAL -->
+            <div id="guiaFacialOverlay" class="guia-facial-overlay">
+              <div class="oval-guide"></div>
+            </div>
+          </div>
+
+          <!-- INDICADORES BIOMÉTRICOS EN TIEMPO REAL -->
+          <div class="indicadores-panel">
+            <div class="indicador-item">
+              <strong>Iluminación:</strong>
+              <meter id="meterLuz" min="0" max="100" low="25" high="85" optimum="60" value="50" style="width: 100%; height: 10px;"></meter>
+              <span id="labelLuz" style="font-size: 11px; display: block;">Esperando cámara...</span>
+            </div>
+            <div class="indicador-item" style="text-align: center;">
+              <strong>Presencia Biométrica:</strong>
+              <div style="margin-top: 4px;">
+                <span id="badgeMovimiento" class="badge-alerta badge-warn">Verificando...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD DE RETO DINÁMICO ACTIVO -->
+          <div id="cardRetoActivo" class="card-reto">
+            <span id="retoNumero" class="badge-estado estado-en_proceso" style="margin-bottom: 8px;">Reto 1 de 2</span>
+            <h4 id="retoTitulo">Parpadeo doble</h4>
+            <p id="retoInstruccion">Parpadea lentamente dos veces mirando la cámara</p>
+            
+            <div class="timer-container">
+              <div id="timerBar" class="timer-bar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b;">
+              <span id="retoFeedbackTiempoReal">Observando...</span>
+              <strong id="timerLabel">12s</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div style="margin-top: 15px; text-align: center;">
+          <button id="encenderCamara">Encender cámara</button>
+          <button id="apagarCamara" class="btn-secondary" disabled>Apagar cámara</button>
+          <button id="btnIniciarPrueba" style="background-color: var(--accent);">Comenzar Retos de Vida</button>
+        </div>
+
+        <!-- Canvas oculto para análisis y captura de fotogramas -->
+        <canvas id="canvasCaptura" style="display: none;"></canvas>
+      </div>
+    </section>
+
+    <!-- 3. SECCIÓN HISTORIAL -->
+    <section id="historial">
+      <h2>Historial de Verificaciones</h2>
+      <p>Registro auditable de las verificaciones ejecutadas en el sistema.</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre del Titular</th>
+            <th>Documento</th>
+            <th>Estado</th>
+            <th>Scores Obtenidos</th>
+            <th>Fecha / Hora</th>
+          </tr>
+        </thead>
+        <tbody id="tablaHistorialBody">
+          <tr><td colspan="6" style="text-align: center;">Cargando historial...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. SECCIÓN USUARIOS -->
+    <section id="usuarios">
+      <h2>Gestión de Usuarios y Roles</h2>
+      <p>Usuarios autorizados para administración y resolución de revisiones manuales.</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre Completo</th>
+            <th>Correo Electrónico</th>
+            <th>Rol Asignado</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tablaUsuariosBody">
+          <tr>
+            <td>1</td>
+            <td><strong>Administrador del Sistema Grupo 4</strong></td>
+            <td>admin@ugb.edu.sv</td>
+            <td><span class="badge-estado">Administrador</span></td>
+            <td>Activo ✓</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Oficial de Verificación CASATIC</strong></td>
+            <td>oficial@ugb.edu.sv</td>
+            <td><span class="badge-estado">OficialVerificacion</span></td>
+            <td>Activo ✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 5. SECCIÓN REPORTES Y MÉTRICAS -->
+    <section id="reportes">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin-bottom: 0; border-bottom: 0; padding-bottom: 0;">Panel de Reportes y Auditoría</h2>
+        <button id="btnExportarCsv" class="btn-secondary" style="font-size: 13px;">Exportar CSV</button>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0 25px;">
+
+      <!-- TARJETAS KPI -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #64748b;">Total Solicitudes</div>
+          <div id="statTotal" class="num">-</div>
+        </div>
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #166534;">Aprobadas</div>
+          <div id="statAprobadas" class="num" style="color: #166534;">-</div>
+        </div>
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #991b1b;">Rechazadas</div>
+          <div id="statRechazadas" class="num" style="color: #991b1b;">-</div>
+        </div>
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #92400e;">Revisión Manual</div>
+          <div id="statManual" class="num" style="color: #92400e;">-</div>
+        </div>
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #1e293b;">Tasa de Éxito</div>
+          <div id="statTasaExito" class="num">-</div>
+        </div>
+        <div class="metric-card">
+          <div style="font-size: 13px; color: #1e293b;">Tiempo Promedio</div>
+          <div id="statTiempoProm" class="num">-</div>
+        </div>
+      </div>
+
+      <h3>Verificaciones Centralizadas (Vista Administrador)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Titular</th>
+            <th>Documento</th>
+            <th>Estado</th>
+            <th>Similitud</th>
+            <th>Liveness</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="tablaAdminBody">
+          <tr><td colspan="7" style="text-align: center;">Cargando datos administrativos...</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- MODAL DE RESULTADO DE VERIFICACIÓN -->
+  <div id="modalResultado" class="modal-overlay">
+    <div class="modal-content">
+      <div id="modalEstadoBadge" class="badge-estado estado-aprobado" style="margin-bottom: 12px; font-size: 13px;">APROBADO</div>
+      <h3 id="modalTitulo" style="margin: 0 0 10px; color: #194e82;">Resultado de Verificación</h3>
+      <p id="modalMensaje" style="color: #475569; font-size: 14px; margin-bottom: 20px;">-</p>
+
+      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
+        <div style="background: #f8fafc; padding: 12px 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 11px; color: #64748b;">Prueba de Vida</div>
+          <div id="modalScoreLiveness" style="font-size: 20px; font-weight: 700; color: #194e82;">-</div>
+        </div>
+        <div style="background: #f8fafc; padding: 12px 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <div style="font-size: 11px; color: #64748b;">Similitud Facial</div>
+          <div id="modalScoreSimilitud" style="font-size: 20px; font-weight: 700; color: #194e82;">-</div>
+        </div>
+      </div>
+
+      <button id="btnCerrarModal" style="width: 100%;">Entendido y Cerrar</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Grupo 4 - Proyecto Académico "Proyect05: Sistema para realizar pruebas de vida" | CASATIC / UGB</p>
+  </footer>
+
+  <!-- SCRIPT MODULAR PRINCIPAL -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

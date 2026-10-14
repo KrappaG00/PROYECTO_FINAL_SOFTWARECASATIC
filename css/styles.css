@@ -1,0 +1,454 @@
+/* =========================================================================
+   Sistema de Pruebas de Vida (Liveness Detection) - Grupo 4 (CASATIC / UGB)
+   Estilos CSS Modernos, Responsivos y Accesibles
+   ========================================================================= */
+
+:root {
+  --primary: #194e82;
+  --primary-dark: #103254;
+  --primary-light: #2a68a5;
+  --accent: #00a884;
+  --success: #2e7d32;
+  --warning: #ed6c02;
+  --danger: #d32f2f;
+  --bg-main: #f4f6f9;
+  --card-bg: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #cbd5e1;
+  --border-radius: 10px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* ENCABEZADO */
+header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  text-align: center;
+  padding: 30px 20px 20px;
+  box-shadow: var(--shadow-md);
+}
+
+header h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+header p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* BANNER DE COMPATIBILIDAD */
+.banner-info, .banner-danger {
+  padding: 8px 16px;
+  font-size: 13px;
+  text-align: center;
+  font-weight: 500;
+}
+.banner-info { background-color: #e0f2fe; color: #0369a1; border-bottom: 1px solid #bae6fd; }
+.banner-danger { background-color: #fee2e2; color: #991b1b; border-bottom: 1px solid #fecaca; }
+
+/* NAVEGACIÓN TABS */
+nav {
+  background-color: #ffffff;
+  padding: 0 15px;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+nav a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin: 0 10px;
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  color: var(--primary);
+}
+
+nav a.nav-activo {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* CONTENEDOR PRINCIPAL */
+main {
+  max-width: 960px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+/* SECCIONES Y VISIBILIDAD */
+section {
+  display: none;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 30px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+section.seccion-activa {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+  margin-top: 0;
+  color: var(--primary-dark);
+  font-size: 22px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+/* BOTONES */
+button, .boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  color: white;
+  border: 0;
+  padding: 11px 20px;
+  margin: 6px 6px 6px 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover, .boton:hover {
+  background-color: var(--primary-dark);
+}
+
+button:active, .boton:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  background-color: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: #64748b;
+}
+.btn-secondary:hover { background-color: #475569; }
+
+/* CONTENEDOR DE CÁMARA Y GUÍA FACIAL */
+.camara-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.camara-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 4 / 3;
+  background-color: #0f172a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--border-color);
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Efecto espejo */
+  display: none;
+}
+
+#mensajeCamara {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #94a3b8;
+  font-size: 15px;
+  margin: 0;
+  text-align: center;
+  width: 80%;
+}
+
+/* OVERLAY GUÍA FACIAL OVALADA */
+.guia-facial-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.oval-guide {
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 60%;
+  height: 70%;
+  border: 3px dashed rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  animation: pulseGuide 2.5s infinite;
+}
+
+@keyframes pulseGuide {
+  0% { border-color: rgba(255, 255, 255, 0.6); }
+  50% { border-color: #22c55e; }
+  100% { border-color: rgba(255, 255, 255, 0.6); }
+}
+
+/* RETO BIOMÉTRICO ACTIVO CARD */
+.card-reto {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 15px;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid var(--primary-light);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.card-reto h4 {
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+  font-size: 16px;
+}
+
+.card-reto p {
+  margin: 4px 0 10px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* PROGRESS BAR RETO */
+.timer-container {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.timer-bar {
+  height: 100%;
+  width: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+}
+
+/* METERS E INDICADORES BIOMÉTRICOS */
+.indicadores-panel {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  max-width: 480px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.indicador-item {
+  flex: 1;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.meter-ok { accent-color: var(--success); }
+.meter-warn { accent-color: var(--warning); }
+
+/* BADGES */
+.badge-alerta {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-success { background-color: #dcfce7; color: #166534; }
+.badge-warn { background-color: #fef3c7; color: #92400e; }
+.badge-danger { background-color: #fee2e2; color: #991b1b; }
+
+.badge-estado {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.estado-aprobado { background-color: #dcfce7; color: #15803d; }
+.estado-rechazado { background-color: #fee2e2; color: #b91c1c; }
+.estado-revision_manual { background-color: #fef9c3; color: #a16207; }
+.estado-en_proceso { background-color: #e0f2fe; color: #0369a1; }
+.estado-bloqueado { background-color: #f1f5f9; color: #475569; }
+
+/* FORMULARIOS Y CARGA DE DOCUMENTO */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.doc-preview-box {
+  display: none;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.doc-preview-box img {
+  max-width: 260px;
+  max-height: 160px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+/* TABLAS */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+th, td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f8fafc;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+tr:hover td {
+  background-color: #f1f5f9;
+}
+
+/* GRID DE MÉTRICAS */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.metric-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.metric-card .num {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 6px;
+}
+
+/* MODAL DE RESULTADO */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+  padding: 26px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+/* PIE DE PÁGINA */
+footer {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 30px 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  nav { flex-wrap: wrap; }
+  nav a { padding: 8px 10px; margin: 0; }
+  .indicadores-panel { flex-direction: column; }
+}

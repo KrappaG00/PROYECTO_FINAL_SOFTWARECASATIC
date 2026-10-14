@@ -1,0 +1,37 @@
+## Visual Studio & .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+## Logs & Audit dumps
+*.log
+logs/
+
+## Node & NPM (si se usan herramientas frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+
+## Environment variables & secrets
+appsettings.Development.json
+appsettings.Production.json
+.env
+*.pfx
+*.key
+
+## OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

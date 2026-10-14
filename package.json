@@ -1,0 +1,11 @@
+{
+  "name": "sistema-pruebas-vida-liveness",
+  "version": "1.0.0",
+  "description": "Sistema de Pruebas de Vida (Liveness Detection) y Verificación de Identidad - Grupo 4",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["liveness-detection", "biometrics", "webrtc", "canvas"],
+  "author": "Grupo 4 - CASATIC / UGB",
+  "license": "MIT"
+}
