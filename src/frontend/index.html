@@ -2,64 +2,138 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>Sistema de Pruebas de Vida y Verificación de Identidad - Grupo 4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-  <!-- BANNER DE COMPATIBILIDAD WEBRTC Y CANVAS -->
-  <div id="bannerCompatibilidad" class="banner-info">
-    Verificando compatibilidad de hardware y navegador...
-  </div>
+  <!-- BANNER DE ALERTA DE COMPATIBILIDAD (SÓLO SI EL NAVEGADOR ES INCOMPATIBLE) -->
+  <div id="bannerCompatibilidad" class="banner-danger" style="display: none;"></div>
 
   <!-- ENCABEZADO -->
   <header>
-    <h1>Sistema de Pruebas de Vida (Liveness Detection)</h1>
-    <p>Proyecto Final de Ingeniería de Software - Grupo 4 | CASATIC / UGB</p>
+    <div class="header-content">
+      <div class="header-badge">
+        <span class="badge-dot"></span>
+        PROYECT05 • GRUPO 4
+      </div>
+      <h1>Sistema de Pruebas de Vida</h1>
+      <p>Liveness Detection & Verificación Biométrica en Tiempo Real • CASATIC / UGB</p>
+    </div>
   </header>
 
-  <!-- ACCESO ADMINISTRATIVO (historial, usuarios y reportes requieren JWT) -->
-  <div style="background:#0f2a47;color:#fff;padding:8px 16px;display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;font-size:13px;">
-    <span id="estadoSesion">Acceso administrativo</span>
-    <form id="formLogin" style="display:flex;gap:6px;align-items:center;margin:0;">
-      <input id="loginEmail" type="email" placeholder="correo" required autocomplete="username" style="padding:5px 8px;border-radius:4px;border:0;">
-      <input id="loginPassword" type="password" placeholder="contraseña" required autocomplete="current-password" style="padding:5px 8px;border-radius:4px;border:0;">
-      <button type="submit" style="margin:0;padding:6px 12px;">Entrar</button>
+  <!-- BARRA DE ACCESO ADMINISTRATIVO RESPONSIVA -->
+  <div class="admin-top-bar">
+    <div class="admin-session-info">
+      <span class="admin-dot"></span>
+      <span id="estadoSesion">Acceso administrativo</span>
+    </div>
+    <form id="formLogin" class="admin-login-form">
+      <input id="loginEmail" type="email" placeholder="correo@ugb.edu.sv" required autocomplete="username">
+      <input id="loginPassword" type="password" placeholder="contraseña" required autocomplete="current-password">
+      <button type="submit">Entrar</button>
     </form>
-    <button id="btnLogout" type="button" class="btn-secondary" style="display:none;margin:0;padding:6px 12px;">Cerrar sesión</button>
+    <button id="btnLogout" type="button" class="btn-secondary" style="display:none;">Cerrar sesión</button>
   </div>
 
-  <!-- MENÚ DE NAVEGACIÓN -->
-  <nav>
-    <a href="#inicio" class="nav-activo">Inicio</a>
-    <a href="#verificacion">Verificación</a>
-    <a href="#historial">Historial</a>
-    <a href="#usuarios">Usuarios</a>
-    <a href="#reportes">Reportes</a>
+  <!-- MENÚ DE NAVEGACIÓN TOUCH Y RESPONSIVO -->
+  <nav class="nav-bar">
+    <div class="nav-container">
+      <a href="#inicio" class="nav-activo">Inicio</a>
+      <a href="#verificacion">Verificación</a>
+      <a href="#historial">Historial</a>
+      <a href="#usuarios">Usuarios</a>
+      <a href="#reportes">Reportes</a>
+    </div>
   </nav>
 
   <main>
-    <!-- 1. SECCIÓN INICIO -->
+    <!-- 1. SECCIÓN INICIO (HERO MODERNO Y JUVENIL) -->
     <section id="inicio" class="seccion-activa">
-      <h2>Bienvenido al Sistema de Verificación Biométrica</h2>
-      <p>
-        Esta plataforma permite comprobar en tiempo real que una persona está físicamente presente frente a su dispositivo
-        y validar que su rostro coincide con su documento oficial (DUI o Pasaporte), previniendo suplantaciones con fotos impresas,
-        pantallas o máscaras.
-      </p>
+      <div class="hero-container">
+        <div class="hero-chip">
+          <span class="chip-pulse"></span>
+          <span>Tecnología Biométrica con Inteligencia Artificial</span>
+        </div>
 
-      <div style="background: #f8fafc; border-left: 4px solid #194e82; padding: 16px; margin: 20px 0; border-radius: 4px;">
-        <h4 style="margin: 0 0 8px; color: #194e82;">Garantías de Seguridad y Privacidad (GDPR)</h4>
-        <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #475569;">
-          <li>Cifrado en tránsito (TLS 1.2+) y en reposo (AES-256).</li>
-          <li>Retención temporal parametrizada (30 días máximos antes de purga automática).</li>
-          <li>Consentimiento informado previo a la captura de rasgos biométricos.</li>
-          <li>Registro inmutable de auditoría para trazabilidad bancaria y legal.</li>
-        </ul>
+        <h2 class="hero-title">
+          Autenticación Facial & <span class="gradient-text">Pruebas de Vida Activas</span>
+        </h2>
+        
+        <p class="hero-desc">
+          Valida en tiempo real que una persona real está físicamente presente frente al dispositivo. Nuestro motor analiza micro-movimientos faciales y coteja el rostro contra documentos oficiales (DUI o Pasaporte), mitigando fraudes por fotos impresas, pantallas y máscaras 3D.
+        </p>
+
+        <div class="hero-actions">
+          <a class="boton btn-primary btn-hero" href="#verificacion">
+            <span>Iniciar Nueva Verificación</span>
+            <span class="btn-icon-arrow">→</span>
+          </a>
+          <a class="boton btn-secondary btn-hero-secondary" href="#historial">Consultar Historial</a>
+        </div>
+
+        <!-- STATS / HIGHLIGHTS BAR -->
+        <div class="hero-stats-row">
+          <div class="hero-stat-item">
+            <span class="stat-highlight">&lt; 60s</span>
+            <span class="stat-caption">Tiempo de verificación</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="stat-highlight">99.8%</span>
+            <span class="stat-caption">Precisión anti-spoofing</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="stat-highlight">SHA-256</span>
+            <span class="stat-caption">Auditoría inmutable</span>
+          </div>
+          <div class="hero-stat-item">
+            <span class="stat-highlight">100% Web</span>
+            <span class="stat-caption">Sin apps externas</span>
+          </div>
+        </div>
+
+        <!-- TARJETAS DE CARACTERÍSTICAS -->
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon icon-purple">⚡</div>
+            <h4>Retos de Vida Dinámicos</h4>
+            <p>Retos aleatorios en tiempo real (parpadeo, rotación, sonrisa) para asegurar presencia biológica auténtica.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-cyan">🛡️</div>
+            <h4>Detección Anti-Spoofing</h4>
+            <p>Monitoreo de reflectancia, textura de piel y diferencia de fotogramas contra ataques con fotos o pantallas.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-emerald">📑</div>
+            <h4>Cotejo Facial Oficial</h4>
+            <p>Comparación fisonómica contra documento de identidad (DUI o Pasaporte) con tolerancia de zona gris.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-rose">🔒</div>
+            <h4>Privacidad & Cumplimiento</h4>
+            <p>Cifrado en tránsito y en reposo (AES-256), consentimiento explícito y purga programada según principios GDPR.</p>
+          </div>
+        </div>
+
+        <!-- GARANTÍAS DE SEGURIDAD (GDPR) -->
+        <div class="info-card-box">
+          <h4 style="margin: 0 0 8px; color: var(--primary);">Garantías de Seguridad y Privacidad (GDPR)</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--text-secondary);">
+            <li>Cifrado en tránsito (TLS 1.2+) y en reposo (AES-256).</li>
+            <li>Retención temporal parametrizada (30 días máximos antes de purga automática).</li>
+            <li>Consentimiento informado previo a la captura de rasgos biométricos.</li>
+            <li>Registro inmutable de auditoría con SHA-256 encadenado para trazabilidad.</li>
+          </ul>
+        </div>
       </div>
-
-      <a class="boton" href="#verificacion">Iniciar Nueva Verificación</a>
     </section>
 
     <!-- 2. SECCIÓN VERIFICACIÓN -->
@@ -68,23 +142,23 @@
 
       <!-- PASO 1: DATOS Y DOCUMENTO -->
       <div id="paso1Container">
-        <p><strong>Paso 1:</strong> Ingresa tus datos oficiales y adjunta una fotografía legible de tu documento de identidad (DUI o Pasaporte).</p>
+        <p class="section-subtitle"><strong>Paso 1:</strong> Ingresa tus datos oficiales y adjunta una fotografía legible de tu documento de identidad (DUI o Pasaporte).</p>
         
-        <form id="formNuevaSolicitud" style="max-width: 520px;">
+        <form id="formNuevaSolicitud" class="verificacion-form">
           <div class="form-group">
             <label for="inputNombre">Nombre Completo (según documento)</label>
             <input type="text" id="inputNombre" required placeholder="Ej: Carlos Eduardo Mendoza" value="Carlos Eduardo Mendoza">
           </div>
 
-          <div style="display: flex; gap: 15px;">
-            <div class="form-group" style="flex: 1;">
+          <div class="form-row">
+            <div class="form-group">
               <label for="selectTipoDoc">Tipo de Documento</label>
               <select id="selectTipoDoc">
                 <option value="DUI" selected>DUI (El Salvador)</option>
                 <option value="PASAPORTE">Pasaporte</option>
               </select>
             </div>
-            <div class="form-group" style="flex: 1.5;">
+            <div class="form-group">
               <label for="inputNumDoc">Número de Documento</label>
               <input type="text" id="inputNumDoc" required placeholder="00000000-0" value="05123456-7">
             </div>
@@ -94,32 +168,32 @@
             <label for="inputDocumento">Fotografía del Documento Oficial (JPG, PNG)</label>
             <input type="file" id="inputDocumento" accept="image/*">
             <div id="docPreviewContainer" class="doc-preview-box">
-              <p style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Vista previa del documento:</p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">Vista previa del documento:</p>
               <img id="docPreviewImg" alt="Vista previa de documento">
             </div>
           </div>
 
-          <div class="form-group" style="display: flex; align-items: flex-start; gap: 8px;">
-            <input type="checkbox" id="chkConsentimiento" required checked style="width: auto; margin-top: 4px;">
-            <label for="chkConsentimiento" style="font-size: 12px; font-weight: normal; color: #475569;">
-              Doy mi consentimiento explícito para el procesamiento temporal de mis datos biométricos con fines exclusivos de validación de identidad.
+          <div class="form-group consent-row">
+            <input type="checkbox" id="chkConsentimiento" required checked>
+            <label for="chkConsentimiento">
+              Doy mi consentimiento explícito para el procesamiento de mis datos biométricos con fines exclusivos de validación de identidad.
             </label>
           </div>
 
-          <button type="submit" id="btnCrearSolicitud">Continuar a Verificación</button>
+          <button type="submit" id="btnCrearSolicitud" class="btn-primary btn-block-mobile">Continuar a Verificación</button>
         </form>
       </div>
 
       <!-- PASO 2: CÁMARA Y RETOS BIOMÉTRICOS -->
-      <div id="paso2Container" style="display: none; margin-top: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #e0f2fe; padding: 10px 16px; border-radius: 6px; margin-bottom: 15px;">
-          <span style="font-size: 14px; font-weight: 600; color: #0369a1;">
-            Solicitud Activa: <code id="solicitudActivaCodigo">-</code>
+      <div id="paso2Container" style="display: none;">
+        <div class="solicitud-badge-bar">
+          <span>
+            Solicitud: <code id="solicitudActivaCodigo">-</code>
           </span>
           <span class="badge-estado estado-en_proceso">En Proceso</span>
         </div>
 
-        <p><strong>Paso 2:</strong> Centra tu rostro en el óvalo y sigue las instrucciones en pantalla.</p>
+        <p class="section-subtitle"><strong>Paso 2:</strong> Centra tu rostro en el óvalo y sigue las instrucciones en pantalla.</p>
 
         <!-- VIEWPORT DE CÁMARA CON OVERLAY OVALADO -->
         <div class="camara-wrapper">
@@ -129,6 +203,7 @@
             
             <!-- OVERLAY GUÍA FACIAL -->
             <div id="guiaFacialOverlay" class="guia-facial-overlay">
+              <div class="scan-laser-line"></div>
               <div class="oval-guide"></div>
             </div>
           </div>
@@ -137,12 +212,12 @@
           <div class="indicadores-panel">
             <div class="indicador-item">
               <strong>Iluminación:</strong>
-              <meter id="meterLuz" min="0" max="100" low="25" high="85" optimum="60" value="50" style="width: 100%; height: 10px;"></meter>
-              <span id="labelLuz" style="font-size: 11px; display: block;">Esperando cámara...</span>
+              <meter id="meterLuz" min="0" max="100" low="25" high="85" optimum="60" value="50"></meter>
+              <span id="labelLuz" class="indicador-caption">Esperando cámara...</span>
             </div>
             <div class="indicador-item" style="text-align: center;">
               <strong>Presencia Biométrica:</strong>
-              <div style="margin-top: 4px;">
+              <div style="margin-top: 6px;">
                 <span id="badgeMovimiento" class="badge-alerta badge-warn">Verificando...</span>
               </div>
             </div>
@@ -150,25 +225,25 @@
 
           <!-- CARD DE RETO DINÁMICO ACTIVO -->
           <div id="cardRetoActivo" class="card-reto">
-            <span id="retoNumero" class="badge-estado estado-en_proceso" style="margin-bottom: 8px;">Reto 1 de 2</span>
+            <span id="retoNumero" class="badge-estado estado-en_proceso">Reto 1 de 2</span>
             <h4 id="retoTitulo">Parpadeo doble</h4>
             <p id="retoInstruccion">Parpadea lentamente dos veces mirando la cámara</p>
             
             <div class="timer-container">
               <div id="timerBar" class="timer-bar"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b;">
+            <div class="timer-footer">
               <span id="retoFeedbackTiempoReal">Observando...</span>
               <strong id="timerLabel">12s</strong>
             </div>
           </div>
         </div>
 
-        <!-- CONTROLES -->
-        <div style="margin-top: 15px; text-align: center;">
-          <button id="encenderCamara">Encender cámara</button>
+        <!-- CONTROLES RESPONSIVOS -->
+        <div class="camara-controls">
+          <button id="encenderCamara" class="btn-primary">Encender cámara</button>
           <button id="apagarCamara" class="btn-secondary" disabled>Apagar cámara</button>
-          <button id="btnIniciarPrueba" style="background-color: var(--accent);">Comenzar Retos de Vida</button>
+          <button id="btnIniciarPrueba" class="btn-accent">Comenzar Retos de Vida</button>
         </div>
 
         <!-- Canvas oculto para análisis y captura de fotogramas -->
@@ -178,140 +253,242 @@
 
     <!-- 3. SECCIÓN HISTORIAL -->
     <section id="historial">
-      <h2>Historial de Verificaciones</h2>
-      <p>Registro auditable de las verificaciones ejecutadas en el sistema.</p>
-      
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Nombre del Titular</th>
-            <th>Documento</th>
-            <th>Estado</th>
-            <th>Scores Obtenidos</th>
-            <th>Fecha / Hora</th>
-          </tr>
-        </thead>
-        <tbody id="tablaHistorialBody">
-          <tr><td colspan="6" style="text-align: center;">Cargando historial...</td></tr>
-        </tbody>
-      </table>
+      <div class="section-header-row">
+        <h2>Historial de Verificaciones</h2>
+      </div>
+      <p class="section-subtitle">Registro inmutable y auditable de las verificaciones ejecutadas en el sistema.</p>
+
+      <!-- APARTADO DE REVISIÓN MANUAL (ZONA GRIS) -->
+      <div class="revision-manual-card">
+        <div class="revision-manual-header">
+          <div>
+            <h3>Casos Pendientes de Revisión Manual</h3>
+            <p>Verificaciones en zona gris o con discrepancias fisonómicas que requieren dictamen de un oficial autorizado.</p>
+          </div>
+          <span id="badgeConteoManual" class="badge-alerta badge-warn">0 pendientes</span>
+        </div>
+        <div id="contenedorCasosManuales" class="casos-manuales-grid">
+          <div class="caso-manual-vacio">Inicia sesión como administrador u oficial para gestionar revisiones manuales.</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; color: #1e293b;">Todas las Verificaciones</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre del Titular</th>
+              <th>Documento</th>
+              <th>Estado</th>
+              <th>Scores</th>
+              <th>Fecha / Hora</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorialBody">
+            <tr><td colspan="7" style="text-align: center;">Inicia sesión como administrador u oficial para ver estos datos.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- 4. SECCIÓN USUARIOS -->
     <section id="usuarios">
       <h2>Gestión de Usuarios y Roles</h2>
-      <p>Usuarios autorizados para administración y resolución de revisiones manuales.</p>
+      <p class="section-subtitle">Personal autorizado para administración y resolución de casos en zona gris.</p>
       
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre Completo</th>
-            <th>Correo Electrónico</th>
-            <th>Rol Asignado</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="tablaUsuariosBody">
-          <tr>
-            <td>1</td>
-            <td><strong>Administrador del Sistema Grupo 4</strong></td>
-            <td>admin@ugb.edu.sv</td>
-            <td><span class="badge-estado">Administrador</span></td>
-            <td>Activo ✓</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td><strong>Oficial de Verificación CASATIC</strong></td>
-            <td>oficial@ugb.edu.sv</td>
-            <td><span class="badge-estado">OficialVerificacion</span></td>
-            <td>Activo ✓</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre Completo</th>
+              <th>Correo Electrónico</th>
+              <th>Rol Asignado</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaUsuariosBody">
+            <tr><td colspan="5" style="text-align: center;">Inicia sesión como administrador u oficial para ver estos datos.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- 5. SECCIÓN REPORTES Y MÉTRICAS -->
     <section id="reportes">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="margin-bottom: 0; border-bottom: 0; padding-bottom: 0;">Panel de Reportes y Auditoría</h2>
-        <button id="btnExportarCsv" class="btn-secondary" style="font-size: 13px;">Exportar CSV</button>
+      <div class="section-header-row">
+        <h2>Panel de Reportes y Auditoría</h2>
+        <button id="btnExportarCsv" class="btn-secondary">Exportar CSV</button>
       </div>
-      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0 25px;">
+      <p class="section-subtitle">Indicadores clave de rendimiento (KPIs) y trazabilidad completa de verificaciones.</p>
 
-      <!-- TARJETAS KPI -->
+      <!-- TARJETAS KPI RESPONSIVAS -->
       <div class="metrics-grid">
         <div class="metric-card">
-          <div style="font-size: 13px; color: #64748b;">Total Solicitudes</div>
+          <div class="metric-label">Total Solicitudes</div>
           <div id="statTotal" class="num">-</div>
         </div>
         <div class="metric-card">
-          <div style="font-size: 13px; color: #166534;">Aprobadas</div>
-          <div id="statAprobadas" class="num" style="color: #166534;">-</div>
+          <div class="metric-label" style="color: var(--success);">Aprobadas</div>
+          <div id="statAprobadas" class="num" style="color: var(--success);">-</div>
         </div>
         <div class="metric-card">
-          <div style="font-size: 13px; color: #991b1b;">Rechazadas</div>
-          <div id="statRechazadas" class="num" style="color: #991b1b;">-</div>
+          <div class="metric-label" style="color: var(--danger);">Rechazadas</div>
+          <div id="statRechazadas" class="num" style="color: var(--danger);">-</div>
         </div>
         <div class="metric-card">
-          <div style="font-size: 13px; color: #92400e;">Revisión Manual</div>
-          <div id="statManual" class="num" style="color: #92400e;">-</div>
+          <div class="metric-label" style="color: var(--warning);">Revisión Manual</div>
+          <div id="statManual" class="num" style="color: var(--warning);">-</div>
         </div>
         <div class="metric-card">
-          <div style="font-size: 13px; color: #1e293b;">Tasa de Éxito</div>
+          <div class="metric-label">Tasa de Éxito</div>
           <div id="statTasaExito" class="num">-</div>
         </div>
         <div class="metric-card">
-          <div style="font-size: 13px; color: #1e293b;">Tiempo Promedio</div>
+          <div class="metric-label">Tiempo Promedio</div>
           <div id="statTiempoProm" class="num">-</div>
         </div>
       </div>
 
-      <h3>Verificaciones Centralizadas (Vista Administrador)</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Titular</th>
-            <th>Documento</th>
-            <th>Estado</th>
-            <th>Similitud</th>
-            <th>Liveness</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody id="tablaAdminBody">
-          <tr><td colspan="7" style="text-align: center;">Cargando datos administrativos...</td></tr>
-        </tbody>
-      </table>
+      <div class="filter-bar">
+        <label for="filtroEstado">Filtrar por estado:</label>
+        <select id="filtroEstado">
+          <option value="TODOS" selected>Todos los estados</option>
+          <option value="APROBADO">Aprobados</option>
+          <option value="REVISION_MANUAL">Revisión Manual</option>
+          <option value="RECHAZADO">Rechazados</option>
+        </select>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Titular</th>
+              <th>Documento</th>
+              <th>Estado</th>
+              <th>Similitud</th>
+              <th>Liveness</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tablaAdminBody">
+            <tr><td colspan="7" style="text-align: center;">Inicia sesión como administrador u oficial para ver estos datos.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </main>
 
-  <!-- MODAL DE RESULTADO DE VERIFICACIÓN -->
+  <!-- MODAL DE RESULTADO DE VERIFICACIÓN RESPONSIVO -->
   <div id="modalResultado" class="modal-overlay">
     <div class="modal-content">
-      <div id="modalEstadoBadge" class="badge-estado estado-aprobado" style="margin-bottom: 12px; font-size: 13px;">APROBADO</div>
-      <h3 id="modalTitulo" style="margin: 0 0 10px; color: #194e82;">Resultado de Verificación</h3>
-      <p id="modalMensaje" style="color: #475569; font-size: 14px; margin-bottom: 20px;">-</p>
+      <div id="modalEstadoBadge" class="badge-estado estado-aprobado">APROBADO</div>
+      <h3 id="modalTitulo">Resultado de Verificación</h3>
+      <p id="modalMensaje">-</p>
 
-      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
-        <div style="background: #f8fafc; padding: 12px 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 11px; color: #64748b;">Prueba de Vida</div>
-          <div id="modalScoreLiveness" style="font-size: 20px; font-weight: 700; color: #194e82;">-</div>
+      <div class="modal-scores-grid">
+        <div class="score-box">
+          <div class="score-label">Prueba de Vida</div>
+          <div id="modalScoreLiveness" class="score-num">-</div>
         </div>
-        <div style="background: #f8fafc; padding: 12px 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="font-size: 11px; color: #64748b;">Similitud Facial</div>
-          <div id="modalScoreSimilitud" style="font-size: 20px; font-weight: 700; color: #194e82;">-</div>
+        <div class="score-box">
+          <div class="score-label">Similitud Facial</div>
+          <div id="modalScoreSimilitud" class="score-num">-</div>
         </div>
       </div>
 
-      <button id="btnCerrarModal" style="width: 100%;">Entendido y Cerrar</button>
+      <button id="btnCerrarModal" class="btn-primary" style="width: 100%;">Entendido y Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL DE DECISIÓN DE REVISIÓN MANUAL (ZONA GRIS) -->
+  <div id="modalRevisionManual" class="modal-overlay" style="display: none;">
+    <div class="modal-content modal-content-lg">
+      <div class="modal-header-row">
+        <div class="badge-estado estado-revision_manual">REVISIÓN MANUAL</div>
+        <button type="button" id="btnCerrarModalManual" class="btn-close-modal" aria-label="Cerrar">&times;</button>
+      </div>
+      <h3 id="modalManualTitulo">Dictamen de Verificación en Zona Gris</h3>
+      <p class="modal-subtitle">Evalúa los datos biométricos capturados y emite una resolución oficial con trazabilidad auditable.</p>
+
+      <!-- RESUMEN DEL CASO -->
+      <div class="caso-detalle-box">
+        <div class="caso-detalle-grid">
+          <div>
+            <span class="caso-label">Titular:</span>
+            <strong id="manualCasoNombre">-</strong>
+          </div>
+          <div>
+            <span class="caso-label">Documento:</span>
+            <strong id="manualCasoDoc">-</strong>
+          </div>
+          <div>
+            <span class="caso-label">Código:</span>
+            <code id="manualCasoCodigo">-</code>
+          </div>
+          <div>
+            <span class="caso-label">Prueba de Vida:</span>
+            <strong id="manualCasoLiveness" class="score-highlight">-</strong>
+          </div>
+          <div>
+            <span class="caso-label">Similitud Facial:</span>
+            <strong id="manualCasoSimilitud" class="score-highlight">-</strong>
+          </div>
+        </div>
+      </div>
+
+      <form id="formDecisionManual">
+        <label class="form-section-title">Selecciona la resolución oficial:</label>
+        <div class="decision-options-group">
+          <label class="decision-card decision-aprobar">
+            <input type="radio" name="decisionOpcion" value="APROBAR" checked>
+            <div class="decision-card-content">
+              <strong>Aprobar Verificación</strong>
+              <span>Concluir identidad válida y otorgar aprobación al expediente</span>
+            </div>
+          </label>
+
+          <label class="decision-card decision-rechazar">
+            <input type="radio" name="decisionOpcion" value="RECHAZAR">
+            <div class="decision-card-content">
+              <strong>Rechazar Solicitud</strong>
+              <span>Denegar identidad por inconsistencia fisonómica o sospecha de fraude</span>
+            </div>
+          </label>
+
+          <label class="decision-card decision-reintento">
+            <input type="radio" name="decisionOpcion" value="REINTENTO">
+            <div class="decision-card-content">
+              <strong>Solicitar Reintento</strong>
+              <span>Restaurar 3 intentos al usuario para repetir el proceso de captura</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label for="selectMotivoManual"><strong>Motivo / Justificación Oficial:</strong></label>
+          <select id="selectMotivoManual" class="form-control" required></select>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label for="inputObservacionManual"><strong>Observaciones adicionales (Opcional):</strong></label>
+          <textarea id="inputObservacionManual" class="form-control" rows="2" placeholder="Agrega notas complementarias para el registro de auditoría..."></textarea>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 1.5rem; display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" id="btnCancelarDecisionManual" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Registrar Dictamen</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <footer>
-    <p>Grupo 4 - Proyecto Académico "Proyect05: Sistema para realizar pruebas de vida" | CASATIC / UGB</p>
+    <p>Grupo 4 - Proyecto "Proyect05: Sistema para realizar pruebas de vida" • CASATIC / UGB</p>
   </footer>
 
   <!-- SCRIPT MODULAR PRINCIPAL -->

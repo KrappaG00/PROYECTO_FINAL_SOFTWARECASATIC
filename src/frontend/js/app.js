@@ -40,8 +40,13 @@ class AppController {
     const compat = CameraService.verificarCompatibilidad();
     const banner = $('bannerCompatibilidad');
     if (banner) {
-      banner.textContent = compat.mensaje;
-      banner.className = compat.compatible ? 'banner-info' : 'banner-danger';
+      if (!compat.compatible) {
+        banner.textContent = compat.mensaje;
+        banner.className = 'banner-danger';
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
     }
     this.camera = new CameraService($('video'), $('canvasCaptura'));
     this.bindEvents();
@@ -55,16 +60,23 @@ class AppController {
     $('formNuevaSolicitud')?.addEventListener('submit', (e) => this.crearSolicitud(e));
     $('btnIniciarPrueba')?.addEventListener('click', () => this.iniciarSecuenciaPruebaDeVida());
     $('btnCerrarModal')?.addEventListener('click', () => this.cerrarResultado());
+    $('btnCerrarModalManual')?.addEventListener('click', () => this.ui.cerrarModalRevisionManual());
+    $('btnCancelarDecisionManual')?.addEventListener('click', () => this.ui.cerrarModalRevisionManual());
     $('formLogin')?.addEventListener('submit', (e) => this.login(e));
     $('btnLogout')?.addEventListener('click', () => this.logout());
     $('btnExportarCsv')?.addEventListener('click', () => this.exportarCsv());
     $('filtroEstado')?.addEventListener('change', () => this.cargarAdmin());
 
-    document.querySelectorAll('nav a').forEach((link) => {
+    document.querySelectorAll('a[href^="#"]').forEach((link) => {
       link.addEventListener('click', () => {
         const h = link.getAttribute('href');
         if (['#historial', '#usuarios', '#reportes'].includes(h)) this.cargarAdmin();
       });
+    });
+
+    window.addEventListener('hashchange', () => {
+      const h = window.location.hash;
+      if (['#historial', '#usuarios', '#reportes'].includes(h)) this.cargarAdmin();
     });
   }
 
@@ -103,15 +115,20 @@ class AppController {
 
   async cargarAdmin() {
     if (!this.api.token) {
-      this.mensajeSinSesion('tablaHistorialBody', 6);
+      this.mensajeSinSesion('tablaHistorialBody', 7);
       this.mensajeSinSesion('tablaAdminBody', 7);
       this.mensajeSinSesion('tablaUsuariosBody', 5);
+      const contenedorCasos = $('contenedorCasosManuales');
+      if (contenedorCasos) {
+        contenedorCasos.innerHTML = `<div class="caso-manual-vacio">Inicia sesión como administrador u oficial para gestionar revisiones manuales.</div>`;
+      }
       return;
     }
     try {
       const estado = $('filtroEstado')?.value;
       const data = await this.api.obtenerVerificacionesAdmin({ estado });
-      this.ui.renderizarTablaHistorial(data.items);
+      this.ui.renderizarCasosRevisionManual(data.items, (caso) => this.abrirModalRevision(caso));
+      this.ui.renderizarTablaHistorial(data.items, (caso) => this.abrirModalRevision(caso));
       this.ui.renderizarTablaAdmin(data.items);
       this.ui.renderizarMetricas(await this.api.obtenerMetricas());
       this.renderUsuarios(await this.api.obtenerUsuariosAdmin());
@@ -119,6 +136,18 @@ class AppController {
       if (/401|403/.test(err.message)) { this.logout(); }
       else alert('Error al cargar datos: ' + err.message);
     }
+  }
+
+  abrirModalRevision(caso) {
+    this.ui.abrirModalRevisionManual(caso, async (codigo, decision, motivo, observaciones) => {
+      try {
+        const res = await this.api.resolverRevisionManual(codigo, decision, motivo, observaciones);
+        alert(`Dictamen registrado con éxito: Solicitud ${codigo} -> ${res.solicitud.estado}`);
+        await this.cargarAdmin();
+      } catch (err) {
+        alert('Error al resolver la revisión manual: ' + err.message);
+      }
+    });
   }
 
   renderUsuarios(users) {

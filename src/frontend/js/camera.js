@@ -24,7 +24,7 @@ export class CameraService {
       soporteCanvas,
       mensaje: (!soporteMedia || !soporteCanvas)
         ? "Tu navegador no soporta captura de video o procesamiento en Canvas. Por favor usa Chrome, Edge o Firefox moderno."
-        : "Navegador 100% compatible con WebRTC y Canvas API."
+        : ""
     };
   }
 

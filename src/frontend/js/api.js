@@ -341,6 +341,43 @@ export class ApiService {
     return logs.slice(-limite).reverse();
   }
 
+  async resolverRevisionManual(codigoSolicitud, decision, motivo, observaciones = '') {
+    const solicitudes = JSON.parse(localStorage.getItem('liveness_solicitudes') || '[]');
+    const sol = solicitudes.find(s => s.codigoSolicitud === codigoSolicitud);
+    if (!sol) throw new Error('Solicitud no encontrada');
+
+    let nuevoEstado = 'RECHAZADO';
+    if (decision === 'APROBAR') {
+      nuevoEstado = 'APROBADO';
+      sol.scoreSimilitudFacial = Math.max(sol.scoreSimilitudFacial, 0.88);
+      sol.observaciones = `Aprobado por oficial. Motivo: ${motivo}. ${observaciones}`;
+    } else if (decision === 'RECHAZAR') {
+      nuevoEstado = 'RECHAZADO';
+      sol.observaciones = `Rechazado por oficial. Motivo: ${motivo}. ${observaciones}`;
+    } else if (decision === 'REINTENTO') {
+      nuevoEstado = 'EN_PROCESO';
+      sol.intentosRestantes = 3;
+      sol.observaciones = `Reintento otorgado por oficial. Motivo: ${motivo}. ${observaciones}`;
+    }
+
+    sol.estado = nuevoEstado;
+    sol.fechaFinalizacion = new Date().toISOString();
+    localStorage.setItem('liveness_solicitudes', JSON.stringify(solicitudes));
+
+    await this.registrarLogAuditoria(
+      'REVISION_MANUAL_RESUELTA',
+      decision === 'APROBAR' ? 'INFO' : (decision === 'REINTENTO' ? 'INFO' : 'WARNING'),
+      `Oficial resolvió caso ${codigoSolicitud}: Decisión=${decision}, Motivo="${motivo}", Obs="${observaciones}"`,
+      sol.id
+    );
+
+    return {
+      exito: true,
+      estado: nuevoEstado,
+      mensaje: `Resolución aplicada con éxito: ${nuevoEstado}`
+    };
+  }
+
   async obtenerUsuariosAdmin() {
     return [
       { id: 1, nombreCompleto: 'Administrador del Sistema', email: 'admin@ugb.edu.sv', rol: 'Administrador', activo: true },
