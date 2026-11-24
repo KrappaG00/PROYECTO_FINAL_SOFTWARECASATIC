@@ -14,12 +14,14 @@ public class DocumentUploadRequest
     public string ImagenDocumentoBase64 { get; set; } = string.Empty; // data:image/jpeg;base64,...
     public string TipoDocumento { get; set; } = "DUI";
     public string NumeroDocumento { get; set; } = string.Empty;
+    public double[]? EmbeddingFacial { get; set; }
 }
 
 public class SubmitVerificationAttemptRequest
 {
     public string CodigoSolicitud { get; set; } = string.Empty;
     public string RostroCapturadoBase64 { get; set; } = string.Empty;
+    public double[]? EmbeddingFacial { get; set; }
     public List<ChallengeResponseItem> RespuestasRetos { get; set; } = new();
     public double ScoreLivenessFrontend { get; set; } = 0.0;
     /// <summary>Movimiento inter-frame medio observado en el cliente (0-1).</summary>

@@ -18,7 +18,8 @@ public class FaceComparisonService : IFaceComparisonService
 
     public async Task<(double ScoreSimilitud, string Clasificacion, string Detalle)> CompararRostrosAsync(
         string rostroCapturadoBase64,
-        DocumentoIdentidad documento)
+        DocumentoIdentidad documento,
+        double[]? embeddingVivo = null)
     {
         // Umbrales configurables (tabla ConfiguracionSistema)
         double umbralAprobado = await LeerUmbral("UMBRAL_SIMILITUD_MINIMA", 0.75);
@@ -29,13 +30,30 @@ public class FaceComparisonService : IFaceComparisonService
             embDoc = JsonSerializer.Deserialize<double[]>(documento.EmbeddingDocumento);
 
         byte[]? bytesVivo = DecodificarBase64(rostroCapturadoBase64);
-        double[]? embVivo = bytesVivo == null ? null : _provider.ExtraerEmbedding(bytesVivo);
+        double[]? embVivo128 = bytesVivo != null ? DocumentValidationService.Normalizar128(embeddingVivo) : null;
 
-        if (embDoc == null || embVivo == null || embDoc.Length != embVivo.Length)
-            return (0.0, "RECHAZADO", "No fue posible extraer características del rostro capturado o del documento.");
+        double similitud;
+        if (embDoc is { Length: 128 } && embVivo128 is { Length: 128 })
+        {
+            // Distancia Euclidiana calibrada para descriptores faciales 128-D
+            double sumSq = 0;
+            for (int i = 0; i < 128; i++)
+            {
+                double d = embDoc[i] - embVivo128[i];
+                sumSq += d * d;
+            }
+            double dist = Math.Sqrt(sumSq);
+            similitud = Math.Clamp(1.0 - (dist / 1.15), 0.0, 1.0);
+        }
+        else
+        {
+            double[]? embVivo = bytesVivo == null ? null : _provider.ExtraerEmbedding(bytesVivo);
+            if (embDoc == null || embVivo == null || embDoc.Length != embVivo.Length)
+                return (0.0, "RECHAZADO", "No fue posible extraer características del rostro capturado o del documento.");
 
-        // Coseno entre vectores ya normalizados; se recorta a [0,1].
-        double similitud = Math.Clamp(embDoc.Zip(embVivo, (a, b) => a * b).Sum(), 0.0, 1.0);
+            // Coseno entre vectores ya normalizados; se recorta a [0,1].
+            similitud = Math.Clamp(embDoc.Zip(embVivo, (a, b) => a * b).Sum(), 0.0, 1.0);
+        }
 
         if (similitud >= umbralAprobado)
             return (Math.Round(similitud, 4), "APROBADO",

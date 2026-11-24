@@ -76,11 +76,19 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
     DbInitializer.Initialize(scope.ServiceProvider.GetRequiredService<ApplicationDbContext>());
 
-if (builder.Configuration.GetValue("Swagger:Enabled", true))
+if (app.Environment.IsDevelopment() || builder.Configuration.GetValue("Swagger:Enabled", false))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.Use(async (ctx, next) =>
+{
+    ctx.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
+    ctx.Response.Headers.TryAdd("X-Frame-Options", "DENY");
+    ctx.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
 
 app.UseCors();
 

@@ -1,6 +1,6 @@
 /**
  * Módulo de Interfaz de Usuario y Renderizado Dinámico
- * Sistema de Pruebas de Vida - Grupo 4 (CASATIC / UGB)
+ * VeriCheck ID
  */
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -41,6 +41,13 @@ export class UIManager {
   }
 
   mostrarSeccion(seccionId) {
+    const seccionesOperador = ['historial', 'usuarios', 'reportes'];
+    const autenticado = !!localStorage.getItem('liveness_auth_token');
+    if (seccionesOperador.includes(seccionId) && !autenticado) {
+      seccionId = 'inicio';
+      this.abrirModalLogin();
+    }
+
     this.sections.forEach(sec => {
       sec.classList.toggle('seccion-activa', sec.id === seccionId);
     });
@@ -56,6 +63,46 @@ export class UIManager {
 
     // Scroll suave hacia la sección en móvil
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  actualizarVisibilidadOperador(autenticado, nombre = '', rol = '') {
+    const bar = document.getElementById('operatorBar');
+    const estado = document.getElementById('estadoSesion');
+    const links = document.querySelectorAll('.nav-operator-only');
+
+    if (bar) bar.style.display = autenticado ? 'flex' : 'none';
+    if (estado && autenticado) {
+      estado.textContent = rol ? `${nombre || 'Operador'} (${rol})` : (nombre || 'Operador');
+    }
+    links.forEach(el => {
+      el.style.display = autenticado ? '' : 'none';
+    });
+
+    if (!autenticado) {
+      const actual = window.location.hash.replace('#', '');
+      if (['historial', 'usuarios', 'reportes'].includes(actual)) {
+        this.mostrarSeccion('inicio');
+      }
+    }
+  }
+
+  abrirModalLogin() {
+    const modal = document.getElementById('modalLoginOperador');
+    const errBox = document.getElementById('loginErrorBox');
+    if (errBox) { errBox.style.display = 'none'; errBox.textContent = ''; }
+    if (modal) modal.style.display = 'flex';
+  }
+
+  cerrarModalLogin() {
+    const modal = document.getElementById('modalLoginOperador');
+    if (modal) modal.style.display = 'none';
+  }
+
+  mostrarErrorLogin(mensaje) {
+    const errBox = document.getElementById('loginErrorBox');
+    if (!errBox) return;
+    errBox.textContent = mensaje;
+    errBox.style.display = 'block';
   }
 
   actualizarIndicadorLuz(brillo, optimo, mensaje) {
@@ -124,17 +171,25 @@ export class UIManager {
     const scoreLiveness = document.getElementById('modalScoreLiveness');
     const scoreSimilitud = document.getElementById('modalScoreSimilitud');
     const estadoBadge = document.getElementById('modalEstadoBadge');
+    const btnCerrar = document.getElementById('btnCerrarModal');
 
     if (!modal) return;
 
-    titulo.textContent = resultado.estado === 'APROBADO' ? '¡Verificación Exitosa!' : 'Resultado de Verificación';
+    const esReintento = resultado.estado === 'EN_PROCESO' && (resultado.intentosRestantes ?? 0) > 0;
+    titulo.textContent = resultado.estado === 'APROBADO'
+      ? '¡Verificación Exitosa!'
+      : (esReintento ? 'Intento No Superado' : 'Resultado de Verificación');
     mensaje.textContent = resultado.mensaje;
 
-    scoreLiveness.textContent = `${Math.round(resultado.scoreLiveness * 100)}%`;
-    scoreSimilitud.textContent = `${Math.round(resultado.scoreSimilitudFacial * 100)}%`;
+    scoreLiveness.textContent = `${Math.round((resultado.scoreLiveness ?? 0) * 100)}%`;
+    scoreSimilitud.textContent = `${Math.round((resultado.scoreSimilitudFacial ?? 0) * 100)}%`;
 
     estadoBadge.textContent = resultado.estado;
-    estadoBadge.className = `badge-estado estado-${resultado.estado.toLowerCase()}`;
+    estadoBadge.className = `badge-estado estado-${(resultado.estado || '').toLowerCase()}`;
+
+    if (btnCerrar) {
+      btnCerrar.textContent = esReintento ? `Intentar nuevamente (${resultado.intentosRestantes} restantes)` : 'Entendido y Cerrar';
+    }
 
     modal.style.display = 'flex';
   }
@@ -304,25 +359,19 @@ export class UIManager {
 
     const actualizarMotivos = (decision) => {
       let opciones = [];
-      if (decision === 'APROBAR') {
+      if (decision === 'APROBADO') {
         opciones = [
           'Rasgos fisonómicos concordantes con el documento',
           'Documento legible y prueba de vida satisfactoria',
           'Variación leve atribuible a edad o iluminación',
           'Aprobación autorizada por excepción'
         ];
-      } else if (decision === 'RECHAZAR') {
+      } else {
         opciones = [
           'Discrepancia fisonómica no coincidente con el documento',
           'Fotografía del documento ilegible o de baja calidad',
           'Sospecha de documento alterado o inconsistente',
           'No se pudo certificar identidad de forma concluyente'
-        ];
-      } else {
-        opciones = [
-          'Solicitar reintento por iluminación deficiente',
-          'Solicitar reintento por posición o ángulo inadecuado',
-          'Solicitar reintento por movimiento de cámara durante la prueba'
         ];
       }
 

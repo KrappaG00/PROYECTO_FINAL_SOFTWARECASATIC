@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Sistema de Pruebas de Vida y Verificación de Identidad - Grupo 4</title>
+  <title>VeriCheck ID — Verificación Biométrica y Pruebas de Vida</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -14,81 +14,75 @@
   <!-- BANNER DE ALERTA DE COMPATIBILIDAD (SÓLO SI EL NAVEGADOR ES INCOMPATIBLE) -->
   <div id="bannerCompatibilidad" class="banner-danger" style="display: none;"></div>
 
+  <!-- BARRA DE SESIÓN PARA OPERADORES (SOLO VISIBLE TRAS INICIAR SESIÓN) -->
+  <div id="operatorBar" class="admin-top-bar" style="display: none;">
+    <div class="admin-session-info">
+      <span class="admin-dot"></span>
+      <span id="estadoSesion">Sesión activa</span>
+    </div>
+    <button id="btnLogout" type="button" class="btn-secondary">Cerrar sesión</button>
+  </div>
+
   <!-- ENCABEZADO -->
   <header>
     <div class="header-content">
       <div class="header-badge">
         <span class="badge-dot"></span>
-        PROYECT05 • GRUPO 4
+        VERIFICACIÓN DE IDENTIDAD DIGITAL
       </div>
-      <h1>Sistema de Pruebas de Vida</h1>
-      <p>Liveness Detection & Verificación Biométrica en Tiempo Real • CASATIC / UGB</p>
+      <h1>VeriCheck ID</h1>
+      <p>Verificación Biométrica y Pruebas de Vida en Tiempo Real</p>
     </div>
   </header>
-
-  <!-- BARRA DE ACCESO ADMINISTRATIVO RESPONSIVA -->
-  <div class="admin-top-bar">
-    <div class="admin-session-info">
-      <span class="admin-dot"></span>
-      <span id="estadoSesion">Acceso administrativo</span>
-    </div>
-    <form id="formLogin" class="admin-login-form">
-      <input id="loginEmail" type="email" placeholder="correo@ugb.edu.sv" required autocomplete="username">
-      <input id="loginPassword" type="password" placeholder="contraseña" required autocomplete="current-password">
-      <button type="submit">Entrar</button>
-    </form>
-    <button id="btnLogout" type="button" class="btn-secondary" style="display:none;">Cerrar sesión</button>
-  </div>
 
   <!-- MENÚ DE NAVEGACIÓN TOUCH Y RESPONSIVO -->
   <nav class="nav-bar">
     <div class="nav-container">
       <a href="#inicio" class="nav-activo">Inicio</a>
-      <a href="#verificacion">Verificación</a>
-      <a href="#historial">Historial</a>
-      <a href="#usuarios">Usuarios</a>
-      <a href="#reportes">Reportes</a>
+      <a href="#verificacion">Verificar Identidad</a>
+      <a href="#historial" class="nav-operator-only" style="display: none;">Historial</a>
+      <a href="#usuarios" class="nav-operator-only" style="display: none;">Usuarios</a>
+      <a href="#reportes" class="nav-operator-only" style="display: none;">Reportes</a>
     </div>
   </nav>
 
   <main>
-    <!-- 1. SECCIÓN INICIO (HERO MODERNO Y JUVENIL) -->
+    <!-- 1. SECCIÓN INICIO -->
     <section id="inicio" class="seccion-activa">
       <div class="hero-container">
         <div class="hero-chip">
           <span class="chip-pulse"></span>
-          <span>Tecnología Biométrica con Inteligencia Artificial</span>
+          <span>Validación de Presencia Física en Tiempo Real</span>
         </div>
 
         <h2 class="hero-title">
-          Autenticación Facial & <span class="gradient-text">Pruebas de Vida Activas</span>
+          Verificación de Identidad & <span class="gradient-text">Pruebas de Vida Activas</span>
         </h2>
         
         <p class="hero-desc">
-          Valida en tiempo real que una persona real está físicamente presente frente al dispositivo. Nuestro motor analiza micro-movimientos faciales y coteja el rostro contra documentos oficiales (DUI o Pasaporte), mitigando fraudes por fotos impresas, pantallas y máscaras 3D.
+          Confirma en tiempo real que eres el titular del documento presentado mediante retos guiados frente a la cámara y comparación con tu documento oficial (DUI o Pasaporte), directamente desde tu navegador.
         </p>
 
         <div class="hero-actions">
           <a class="boton btn-primary btn-hero" href="#verificacion">
-            <span>Iniciar Nueva Verificación</span>
+            <span>Iniciar Verificación</span>
             <span class="btn-icon-arrow">→</span>
           </a>
-          <a class="boton btn-secondary btn-hero-secondary" href="#historial">Consultar Historial</a>
         </div>
 
         <!-- STATS / HIGHLIGHTS BAR -->
         <div class="hero-stats-row">
           <div class="hero-stat-item">
             <span class="stat-highlight">&lt; 60s</span>
-            <span class="stat-caption">Tiempo de verificación</span>
+            <span class="stat-caption">Tiempo estimado</span>
           </div>
           <div class="hero-stat-item">
-            <span class="stat-highlight">99.8%</span>
-            <span class="stat-caption">Precisión anti-spoofing</span>
+            <span class="stat-highlight">Guiado</span>
+            <span class="stat-caption">Retos paso a paso</span>
           </div>
           <div class="hero-stat-item">
-            <span class="stat-highlight">SHA-256</span>
-            <span class="stat-caption">Auditoría inmutable</span>
+            <span class="stat-highlight">Privado</span>
+            <span class="stat-caption">Consentimiento previo</span>
           </div>
           <div class="hero-stat-item">
             <span class="stat-highlight">100% Web</span>
@@ -101,36 +95,35 @@
           <div class="feature-card">
             <div class="feature-icon icon-purple">⚡</div>
             <h4>Retos de Vida Dinámicos</h4>
-            <p>Retos aleatorios en tiempo real (parpadeo, rotación, sonrisa) para asegurar presencia biológica auténtica.</p>
+            <p>Instrucciones aleatorias en tiempo real (parpadeo, rotación o gesto) para validar tu presencia frente a la cámara.</p>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon icon-cyan">🛡️</div>
-            <h4>Detección Anti-Spoofing</h4>
-            <p>Monitoreo de reflectancia, textura de piel y diferencia de fotogramas contra ataques con fotos o pantallas.</p>
+            <h4>Control de Calidad Visual</h4>
+            <p>Verificación continua de iluminación, encuadre y movimiento natural durante la captura.</p>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon icon-emerald">📑</div>
-            <h4>Cotejo Facial Oficial</h4>
-            <p>Comparación fisonómica contra documento de identidad (DUI o Pasaporte) con tolerancia de zona gris.</p>
+            <h4>Cotejo con Documento</h4>
+            <p>Validación del formato del documento oficial (DUI o Pasaporte) y comparación visual con tu captura.</p>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon icon-rose">🔒</div>
-            <h4>Privacidad & Cumplimiento</h4>
-            <p>Cifrado en tránsito y en reposo (AES-256), consentimiento explícito y purga programada según principios GDPR.</p>
+            <h4>Privacidad y Retención Limitada</h4>
+            <p>Solicitud de consentimiento explícito antes de encender la cámara y depuración periódica de datos biométricos.</p>
           </div>
         </div>
 
-        <!-- GARANTÍAS DE SEGURIDAD (GDPR) -->
+        <!-- GARANTÍAS DE PRIVACIDAD -->
         <div class="info-card-box">
-          <h4 style="margin: 0 0 8px; color: var(--primary);">Garantías de Seguridad y Privacidad (GDPR)</h4>
+          <h4 style="margin: 0 0 8px; color: var(--primary);">Compromiso de Privacidad</h4>
           <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--text-secondary);">
-            <li>Cifrado en tránsito (TLS 1.2+) y en reposo (AES-256).</li>
-            <li>Retención temporal parametrizada (30 días máximos antes de purga automática).</li>
-            <li>Consentimiento informado previo a la captura de rasgos biométricos.</li>
-            <li>Registro inmutable de auditoría con SHA-256 encadenado para trazabilidad.</li>
+            <li>Solo procesamos tu captura con tu consentimiento explícito previo.</li>
+            <li>Tus datos se utilizan exclusivamente para validar la solicitud en curso.</li>
+            <li>Los registros biométricos temporales se depuran automáticamente según la política de retención vigente.</li>
           </ul>
         </div>
       </div>
@@ -147,7 +140,7 @@
         <form id="formNuevaSolicitud" class="verificacion-form">
           <div class="form-group">
             <label for="inputNombre">Nombre Completo (según documento)</label>
-            <input type="text" id="inputNombre" required placeholder="Ej: Carlos Eduardo Mendoza" value="Carlos Eduardo Mendoza">
+            <input type="text" id="inputNombre" required placeholder="Ej: Nombre y apellidos completos">
           </div>
 
           <div class="form-row">
@@ -160,7 +153,7 @@
             </div>
             <div class="form-group">
               <label for="inputNumDoc">Número de Documento</label>
-              <input type="text" id="inputNumDoc" required placeholder="00000000-0" value="05123456-7">
+              <input type="text" id="inputNumDoc" required placeholder="00000000-0">
             </div>
           </div>
 
@@ -174,7 +167,7 @@
           </div>
 
           <div class="form-group consent-row">
-            <input type="checkbox" id="chkConsentimiento" required checked>
+            <input type="checkbox" id="chkConsentimiento" required>
             <label for="chkConsentimiento">
               Doy mi consentimiento explícito para el procesamiento de mis datos biométricos con fines exclusivos de validación de identidad.
             </label>
@@ -445,7 +438,7 @@
         <label class="form-section-title">Selecciona la resolución oficial:</label>
         <div class="decision-options-group">
           <label class="decision-card decision-aprobar">
-            <input type="radio" name="decisionOpcion" value="APROBAR" checked>
+            <input type="radio" name="decisionOpcion" value="APROBADO" checked>
             <div class="decision-card-content">
               <strong>Aprobar Verificación</strong>
               <span>Concluir identidad válida y otorgar aprobación al expediente</span>
@@ -453,18 +446,10 @@
           </label>
 
           <label class="decision-card decision-rechazar">
-            <input type="radio" name="decisionOpcion" value="RECHAZAR">
+            <input type="radio" name="decisionOpcion" value="RECHAZADO">
             <div class="decision-card-content">
               <strong>Rechazar Solicitud</strong>
               <span>Denegar identidad por inconsistencia fisonómica o sospecha de fraude</span>
-            </div>
-          </label>
-
-          <label class="decision-card decision-reintento">
-            <input type="radio" name="decisionOpcion" value="REINTENTO">
-            <div class="decision-card-content">
-              <strong>Solicitar Reintento</strong>
-              <span>Restaurar 3 intentos al usuario para repetir el proceso de captura</span>
             </div>
           </label>
         </div>
@@ -487,8 +472,37 @@
     </div>
   </div>
 
+  <!-- MODAL DE ACCESO PARA OPERADORES / ADMINISTRADORES -->
+  <div id="modalLoginOperador" class="modal-overlay" style="display: none;">
+    <div class="modal-content modal-login-box">
+      <div class="modal-header-row">
+        <div class="badge-estado estado-en_proceso">PORTAL INTERNO</div>
+        <button type="button" id="btnCerrarModalLogin" class="btn-close-modal" aria-label="Cerrar">&times;</button>
+      </div>
+      <h3>Acceso para Operadores</h3>
+      <p class="modal-subtitle">Uso exclusivo para personal autorizado de verificación y administración.</p>
+
+      <div id="loginErrorBox" class="login-error-box" style="display: none;"></div>
+
+      <form id="formLogin" class="operator-login-form">
+        <div class="form-group">
+          <label for="loginEmail">Correo institucional</label>
+          <input id="loginEmail" type="email" placeholder="usuario@empresa.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
+          <input id="loginPassword" type="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btnSubmitLogin" class="btn-primary" style="width: 100%; margin-top: 8px;">Iniciar sesión</button>
+      </form>
+    </div>
+  </div>
+
   <footer>
-    <p>Grupo 4 - Proyecto "Proyect05: Sistema para realizar pruebas de vida" • CASATIC / UGB</p>
+    <div class="footer-content">
+      <p>VeriCheck ID • Plataforma de Verificación Biométrica de Identidad</p>
+      <button type="button" id="btnAbrirLoginOperador" class="footer-operator-link">Acceso para operadores</button>
+    </div>
   </footer>
 
   <!-- SCRIPT MODULAR PRINCIPAL -->

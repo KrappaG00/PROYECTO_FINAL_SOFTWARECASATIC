@@ -1,6 +1,6 @@
 /**
  * Módulo de Cámara y Manejo de Hardware WebRTC
- * Sistema de Pruebas de Vida - Grupo 4 (CASATIC / UGB)
+ * VeriCheck ID
  */
 
 export class CameraService {

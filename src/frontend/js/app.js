@@ -4,6 +4,7 @@
  */
 import { ApiService } from './api.js';
 import { CameraService } from './camera.js';
+import { FaceAIService } from './face-ai.js';
 import { LivenessEngine } from './liveness.js';
 import { UIManager } from './ui.js';
 
@@ -12,9 +13,12 @@ const $ = (id) => document.getElementById(id);
 class AppController {
   constructor() {
     this.api = new ApiService();
+    this.faceAi = new FaceAIService();
     this.liveness = new LivenessEngine();
     this.ui = new UIManager();
     this.camera = null;
+    this.ultimoLandmarksAI = null;
+    this.procesandoLandmarksAI = false;
     this.reset();
     this.init();
   }
@@ -29,6 +33,8 @@ class AppController {
     this.documentoBase64 = null;
     this.rostroCapturaBase64 = null;
     this.tiempoInicioPrueba = null;
+    this.enTransicionReto = false;
+    this.ultimoResultado = null;
     this.resetTelemetria();
   }
 
@@ -51,6 +57,12 @@ class AppController {
     this.camera = new CameraService($('video'), $('canvasCaptura'));
     this.bindEvents();
     this.actualizarSesion();
+    this.faceAi.init();
+    if (window.location.hash === '#admin' && !this.api.token) {
+      this.ui.abrirModalLogin();
+    } else if (this.api.token) {
+      this.cargarAdmin();
+    }
   }
 
   bindEvents() {
@@ -62,55 +74,71 @@ class AppController {
     $('btnCerrarModal')?.addEventListener('click', () => this.cerrarResultado());
     $('btnCerrarModalManual')?.addEventListener('click', () => this.ui.cerrarModalRevisionManual());
     $('btnCancelarDecisionManual')?.addEventListener('click', () => this.ui.cerrarModalRevisionManual());
+    $('btnAbrirLoginOperador')?.addEventListener('click', () => this.ui.abrirModalLogin());
+    $('btnCerrarModalLogin')?.addEventListener('click', () => this.ui.cerrarModalLogin());
     $('formLogin')?.addEventListener('submit', (e) => this.login(e));
     $('btnLogout')?.addEventListener('click', () => this.logout());
     $('btnExportarCsv')?.addEventListener('click', () => this.exportarCsv());
-    $('filtroEstado')?.addEventListener('change', () => this.cargarAdmin());
+    $('filtroEstado')?.addEventListener('change', () => this.cargarReportesFiltrados());
 
     document.querySelectorAll('a[href^="#"]').forEach((link) => {
       link.addEventListener('click', () => {
         const h = link.getAttribute('href');
-        if (['#historial', '#usuarios', '#reportes'].includes(h)) this.cargarAdmin();
+        if (['#historial', '#usuarios', '#reportes'].includes(h) && this.api.token) this.cargarAdmin();
       });
     });
 
     window.addEventListener('hashchange', () => {
       const h = window.location.hash;
-      if (['#historial', '#usuarios', '#reportes'].includes(h)) this.cargarAdmin();
+      if (h === '#admin' && !this.api.token) {
+        this.ui.abrirModalLogin();
+      } else if (['#historial', '#usuarios', '#reportes'].includes(h) && this.api.token) {
+        this.cargarAdmin();
+      }
     });
   }
 
   // ---------- Sesión administrativa ----------
   actualizarSesion() {
     const logged = !!this.api.token;
-    $('formLogin').style.display = logged ? 'none' : 'flex';
-    $('btnLogout').style.display = logged ? 'inline-flex' : 'none';
-    $('estadoSesion').textContent = logged ? `Sesión: ${localStorage.getItem('liveness_user') || 'administrador'}` : 'Acceso administrativo';
+    const nombre = localStorage.getItem('liveness_user') || '';
+    const rol = localStorage.getItem('liveness_role') || '';
+    this.ui.actualizarVisibilidadOperador(logged, nombre, rol);
   }
 
   async login(e) {
     e.preventDefault();
+    const btn = $('btnSubmitLogin');
     try {
+      if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
       const res = await this.api.login($('loginEmail').value.trim(), $('loginPassword').value);
       localStorage.setItem('liveness_user', res.usuarioNombre || '');
+      localStorage.setItem('liveness_role', res.rol || '');
       $('loginPassword').value = '';
+      this.ui.cerrarModalLogin();
       this.actualizarSesion();
-      this.cargarAdmin();
+      await this.cargarAdmin();
+      this.ui.mostrarSeccion('historial');
     } catch (err) {
-      alert('No se pudo iniciar sesión: ' + err.message);
+      this.ui.mostrarErrorLogin(err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
     }
   }
 
   logout() {
     this.api.setToken(null);
     localStorage.removeItem('liveness_user');
+    localStorage.removeItem('liveness_role');
     this.actualizarSesion();
-    this.cargarAdmin();
+    this.mensajeSinSesion('tablaHistorialBody', 7);
+    this.mensajeSinSesion('tablaAdminBody', 7);
+    this.mensajeSinSesion('tablaUsuariosBody', 5);
   }
 
   mensajeSinSesion(tbodyId, cols) {
     const tb = $(tbodyId);
-    if (tb) tb.innerHTML = `<tr><td colspan="${cols}" style="text-align:center">Inicia sesión como administrador u oficial para ver estos datos.</td></tr>`;
+    if (tb) tb.innerHTML = `<tr><td colspan="${cols}" style="text-align:center">Inicia sesión como operador autorizado para ver estos datos.</td></tr>`;
   }
 
   async cargarAdmin() {
@@ -120,21 +148,46 @@ class AppController {
       this.mensajeSinSesion('tablaUsuariosBody', 5);
       const contenedorCasos = $('contenedorCasosManuales');
       if (contenedorCasos) {
-        contenedorCasos.innerHTML = `<div class="caso-manual-vacio">Inicia sesión como administrador u oficial para gestionar revisiones manuales.</div>`;
+        contenedorCasos.innerHTML = `<div class="caso-manual-vacio">Inicia sesión como operador autorizado para gestionar revisiones manuales.</div>`;
       }
       return;
     }
     try {
-      const estado = $('filtroEstado')?.value;
-      const data = await this.api.obtenerVerificacionesAdmin({ estado });
-      this.ui.renderizarCasosRevisionManual(data.items, (caso) => this.abrirModalRevision(caso));
-      this.ui.renderizarTablaHistorial(data.items, (caso) => this.abrirModalRevision(caso));
-      this.ui.renderizarTablaAdmin(data.items);
-      this.ui.renderizarMetricas(await this.api.obtenerMetricas());
-      this.renderUsuarios(await this.api.obtenerUsuariosAdmin());
+      const estadoFiltro = $('filtroEstado')?.value || 'TODOS';
+      const [dataTodos, metricas, usuarios] = await Promise.all([
+        this.api.obtenerVerificacionesAdmin({ limite: 100 }),
+        this.api.obtenerMetricas(),
+        this.api.obtenerUsuariosAdmin()
+      ]);
+
+      this.ui.renderizarCasosRevisionManual(dataTodos.items, (caso) => this.abrirModalRevision(caso));
+      this.ui.renderizarTablaHistorial(dataTodos.items, (caso) => this.abrirModalRevision(caso));
+      this.ui.renderizarMetricas(metricas);
+      this.renderUsuarios(usuarios);
+
+      if (estadoFiltro === 'TODOS') {
+        this.ui.renderizarTablaAdmin(dataTodos.items);
+      } else {
+        await this.cargarReportesFiltrados();
+      }
     } catch (err) {
-      if (/401|403/.test(err.message)) { this.logout(); }
-      else alert('Error al cargar datos: ' + err.message);
+      if (/401|403/.test(err.message) || err.status === 401 || err.status === 403) {
+        this.logout();
+      } else {
+        alert('Error al cargar datos: ' + err.message);
+      }
+    }
+  }
+
+  async cargarReportesFiltrados() {
+    if (!this.api.token) return;
+    try {
+      const estado = $('filtroEstado')?.value || 'TODOS';
+      const data = await this.api.obtenerVerificacionesAdmin({ estado, limite: 100 });
+      this.ui.renderizarTablaAdmin(data.items);
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) this.logout();
+      else alert('Error al filtrar reportes: ' + err.message);
     }
   }
 
@@ -142,7 +195,8 @@ class AppController {
     this.ui.abrirModalRevisionManual(caso, async (codigo, decision, motivo, observaciones) => {
       try {
         const res = await this.api.resolverRevisionManual(codigo, decision, motivo, observaciones);
-        alert(`Dictamen registrado con éxito: Solicitud ${codigo} -> ${res.solicitud.estado}`);
+        const estadoRes = res?.estado || res?.solicitud?.estado || decision;
+        alert(`Dictamen registrado con éxito: Solicitud ${codigo} -> ${estadoRes}`);
         await this.cargarAdmin();
       } catch (err) {
         alert('Error al resolver la revisión manual: ' + err.message);
@@ -157,21 +211,18 @@ class AppController {
     tb.innerHTML = users.map((u) => `<tr><td>${u.id}</td><td>${esc(u.nombreCompleto)}</td><td>${esc(u.email)}</td><td>${esc(u.rol)}</td><td>${u.activo ? 'Activo' : 'Inactivo'}</td></tr>`).join('');
   }
 
-  exportarCsv() {
+  async exportarCsv() {
+    if (!this.api.token) return this.ui.abrirModalLogin();
     try {
-      const items = JSON.parse(localStorage.getItem('liveness_solicitudes') || '[]');
-      let csv = 'CodigoSolicitud,NombrePersona,NumeroDocumento,TipoDocumento,Estado,ScoreLiveness,ScoreSimilitud,FechaCreacion\n';
-      items.forEach((s) => {
-        csv += `"${s.codigoSolicitud}","${s.nombrePersona}","${s.numeroDocumento}","${s.tipoDocumento}","${s.estado}",${s.scoreLivenessGlobal},${s.scoreSimilitudFacial},"${s.fechaCreacion}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = await this.api.exportarCsv();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `Reporte_Verificaciones_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch (e) {
-      alert('No se pudo exportar: ' + e.message);
+      if (e.status === 401 || e.status === 403) this.logout();
+      else alert('No se pudo exportar: ' + e.message);
     }
   }
 
@@ -231,9 +282,13 @@ class AppController {
     const tipo = $('selectTipoDoc').value;
     try {
       btn.disabled = true;
+      btn.textContent = 'Analizando documento...';
+      const docFace = await this.faceAi.detectarYExtraer(this.documentoBase64);
+      const embeddingDoc = docFace?.detectado ? docFace.descriptor128 : null;
+
       btn.textContent = 'Registrando solicitud...';
       const sol = await this.api.crearSolicitud(nombre, numDoc, tipo, $('chkConsentimiento').checked);
-      await this.api.cargarDocumento(sol.codigoSolicitud, this.documentoBase64, tipo, numDoc);
+      await this.api.cargarDocumento(sol.codigoSolicitud, this.documentoBase64, tipo, numDoc, embeddingDoc);
       this.solicitudActual = sol;
       $('solicitudActivaCodigo').textContent = sol.codigoSolicitud;
       $('paso1Container').style.display = 'none';
@@ -249,6 +304,14 @@ class AppController {
 
   cerrarResultado() {
     this.ui.cerrarModal();
+    if (this.ultimoResultado?.estado === 'EN_PROCESO' && (this.ultimoResultado?.intentosRestantes ?? 0) > 0) {
+      this.retosAsignados = [];
+      this.indiceRetoActual = 0;
+      this.respuestasRetos = [];
+      this.enTransicionReto = false;
+      $('btnIniciarPrueba').disabled = false;
+      return;
+    }
     this.apagarCamara();
     this.reset();
     $('paso2Container').style.display = 'none';
@@ -265,6 +328,8 @@ class AppController {
     this.resetTelemetria();
     this.respuestasRetos = [];
     this.rostroCapturaBase64 = null;
+    this.enTransicionReto = false;
+    this.ultimoLandmarksAI = null;
     this.tiempoInicioPrueba = Date.now();
     try {
       const data = await this.api.obtenerRetos(this.solicitudActual.codigoSolicitud);
@@ -278,6 +343,7 @@ class AppController {
   }
 
   ejecutarRetoActual() {
+    this.enTransicionReto = false;
     if (this.indiceRetoActual >= this.retosAsignados.length) return this.finalizarPruebaDeVida();
     const reto = this.retosAsignados[this.indiceRetoActual];
     this.liveness.reset(); // contadores por reto (p.ej. parpadeos) desde cero
@@ -304,6 +370,7 @@ class AppController {
   iniciarBucleAnalisis() {
     this.detenerBucleAnalisis();
     let ultimo = 0;
+    let ultimoAI = 0;
     const loop = (t) => {
       this.loopAnalisisId = requestAnimationFrame(loop);
       if (t - ultimo < 66) return; // ~15 análisis/s, suficiente y ligero
@@ -316,17 +383,26 @@ class AppController {
       const mov = this.liveness.calcularDiferenciaFotogramas(img);
       this.ui.actualizarIndicadorMovimiento(mov.deltaMovimiento, mov.esEstatico, mov.esErratico);
 
-      const enPrueba = this.retosAsignados.length > 0 && this.indiceRetoActual < this.retosAsignados.length;
+      const enPrueba = !this.enTransicionReto && this.retosAsignados.length > 0 && this.indiceRetoActual < this.retosAsignados.length;
       if (enPrueba) {
+        if (this.faceAi.cargado && !this.procesandoLandmarksAI && (t - ultimoAI >= 160)) {
+          ultimoAI = t;
+          this.procesandoLandmarksAI = true;
+          this.faceAi.analizarVideo($('video'))
+            .then((res) => { if (res) this.ultimoLandmarksAI = res; })
+            .finally(() => { this.procesandoLandmarksAI = false; });
+        }
+
         this.tel.frames++;
         this.tel.sumaDelta += mov.deltaMovimiento;
         if (mov.esEstatico) this.tel.framesEstaticos++;
         else if (!mov.esErratico && mov.deltaMovimiento > 0.004) this.tel.framesMovimientoHumano++;
 
         const reto = this.retosAsignados[this.indiceRetoActual];
-        const ev = this.liveness.evaluarReto(reto.codigoReto, img);
+        const ev = this.liveness.evaluarReto(reto.codigoReto, img, mov, this.ultimoLandmarksAI);
         $('retoFeedbackTiempoReal').textContent = ev.feedback;
         if (ev.cumplido) {
+          this.enTransicionReto = true;
           clearInterval(this.timerInterval);
           this.registrarReto(reto, true, 1.0);
           this.rostroCapturaBase64 = this.camera.capturarFrameBase64('image/jpeg', 0.9);
@@ -351,11 +427,13 @@ class AppController {
     const duracion = (Date.now() - this.tiempoInicioPrueba) / 1000;
     if (!this.rostroCapturaBase64) this.rostroCapturaBase64 = this.camera.capturarFrameBase64('image/jpeg', 0.9);
 
+    const liveFace = await this.faceAi.detectarYExtraer(this.rostroCapturaBase64);
     const t = this.tel;
     const scoreCliente = t.frames ? t.framesMovimientoHumano / t.frames : 0;
     const payload = {
       codigoSolicitud: this.solicitudActual.codigoSolicitud,
       rostroCapturadoBase64: this.rostroCapturaBase64,
+      embeddingFacial: liveFace?.detectado ? liveFace.descriptor128 : null,
       respuestasRetos: this.respuestasRetos,
       scoreLivenessFrontend: Math.min(1, scoreCliente * 2), // 50% de frames con movimiento humano => 1.0
       movimientoPromedio: t.frames ? t.sumaDelta / t.frames : 0,
@@ -366,6 +444,7 @@ class AppController {
 
     try {
       const resultado = await this.api.enviarIntentoVerificacion(payload);
+      this.ultimoResultado = resultado;
       this.ui.mostrarResultadoModal(resultado);
       if (this.api.token) this.cargarAdmin();
     } catch (err) {

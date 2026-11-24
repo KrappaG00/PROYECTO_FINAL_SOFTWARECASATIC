@@ -32,7 +32,7 @@ public class ImageCorrelationEmbeddingProvider : IFaceEmbeddingProvider
         try
         {
             using var img = Image.Load<L8>(imagen);
-            img.Mutate(c => c.Resize(Lado, Lado));
+            img.Mutate(c => c.HistogramEqualization().Resize(Lado, Lado));
             var v = new double[Lado * Lado];
             int i = 0;
             img.ProcessPixelRows(acc =>

@@ -27,9 +27,11 @@ public class DocumentValidationService : IDocumentValidationService
         if (request.TipoDocumento.Equals("DUI", StringComparison.OrdinalIgnoreCase) && !DuiRegex.IsMatch(numDoc))
             return Fallo("El número de DUI no cumple el formato 00000000-0.");
 
-        // Valida que realmente sea una imagen decodificable y extrae su vector.
-        var embedding = _provider.ExtraerEmbedding(bytes);
-        if (embedding == null) return Fallo("El archivo no es una imagen válida (JPG/PNG) o carece de contenido.");
+        // Valida que realmente sea una imagen decodificable y extrae su vector de respaldo.
+        var embeddingRespaldo = _provider.ExtraerEmbedding(bytes);
+        if (embeddingRespaldo == null) return Fallo("El archivo no es una imagen válida (JPG/PNG) o carece de contenido.");
+
+        double[] embeddingFinal = Normalizar128(request.EmbeddingFacial) ?? embeddingRespaldo;
 
         var doc = new DocumentoIdentidad
         {
@@ -40,7 +42,7 @@ public class DocumentValidationService : IDocumentValidationService
             // Privacidad: no se guarda la imagen; solo hash (trazabilidad) y embedding.
             RutaArchivoHash = Convert.ToHexString(SHA256.HashData(bytes)),
             RostroDocumentoBase64 = null,
-            EmbeddingDocumento = JsonSerializer.Serialize(embedding),
+            EmbeddingDocumento = JsonSerializer.Serialize(embeddingFinal),
             // OCR no implementado: se declara explícitamente en lugar de simular datos.
             OcrDatosExtraidos = JsonSerializer.Serialize(new { ocrDisponible = false }),
             FormatoValido = true,
@@ -48,5 +50,14 @@ public class DocumentValidationService : IDocumentValidationService
             FechaCarga = DateTime.UtcNow
         };
         return Task.FromResult<(bool, string?, DocumentoIdentidad?)>((true, null, doc));
+    }
+
+    internal static double[]? Normalizar128(double[]? vec)
+    {
+        if (vec == null || vec.Length != 128) return null;
+        if (vec.Any(v => double.IsNaN(v) || double.IsInfinity(v))) return null;
+        double norma = Math.Sqrt(vec.Sum(v => v * v));
+        if (norma < 1e-9) return null;
+        return vec.Select(v => v / norma).ToArray();
     }
 }

@@ -174,7 +174,7 @@ public class VerificationController : ControllerBase
 
         // 2. Evaluar Similitud Facial
         var (scoreSimilitud, clasificacionFacial, detalleFacial) = 
-            await _faceService.CompararRostrosAsync(request.RostroCapturadoBase64, solicitud.Documento);
+            await _faceService.CompararRostrosAsync(request.RostroCapturadoBase64, solicitud.Documento, request.EmbeddingFacial);
 
         // 3. Determinar estado de la solicitud
         string estadoFinal;
@@ -300,11 +300,16 @@ public class VerificationController : ControllerBase
             return NotFound(new { Mensaje = "Solicitud no encontrada" });
         }
 
+        string doc = solicitud.NumeroDocumento ?? string.Empty;
+        string docEnmascarado = doc.Length > 4
+            ? new string('*', doc.Length - 4) + doc[^4..]
+            : new string('*', doc.Length);
+
         return Ok(new
         {
             solicitud.CodigoSolicitud,
             solicitud.NombrePersona,
-            solicitud.NumeroDocumento,
+            NumeroDocumento = docEnmascarado,
             solicitud.TipoDocumento,
             solicitud.Estado,
             solicitud.IntentosRestantes,

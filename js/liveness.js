@@ -1,6 +1,6 @@
 /**
  * Motor Heurístico de Visión por Computadora y Liveness Detection en Cliente
- * Sistema de Pruebas de Vida - Grupo 4 (CASATIC / UGB)
+ * VeriCheck ID
  */
 
 export class LivenessEngine {
@@ -11,6 +11,7 @@ export class LivenessEngine {
     this.contadorParpadeos = 0;
     this.ultimoParpadeoTimestamp = 0;
     this.umbralParpadeo = 18; // Variación porcentual en área ocular
+    this.ojoCerrado = false;
   }
 
   reset() {
@@ -19,6 +20,7 @@ export class LivenessEngine {
     this.historialOjos = [];
     this.contadorParpadeos = 0;
     this.ultimoParpadeoTimestamp = 0;
+    this.ojoCerrado = false;
   }
 
   /**
@@ -220,11 +222,35 @@ export class LivenessEngine {
   }
 
   /**
-   * Evalúa si un reto específico está siendo cumplido en el frame actual
+   * Evalúa si un reto específico está siendo cumplido en el frame actual.
+   * Si hay landmarks faciales reales (face-api), los prioriza; de lo contrario usa heurística.
    */
-  evaluarReto(codigoReto, imageData) {
+  evaluarReto(codigoReto, imageData, diffActual = null, landmarksAI = null) {
+    if (landmarksAI && landmarksAI.rostroDetectado === false) {
+      return {
+        cumplido: false,
+        progreso: 10,
+        feedback: 'Centra tu rostro dentro del óvalo'
+      };
+    }
+
     switch (codigoReto) {
       case 'PARPADEO_DOBLE': {
+        if (landmarksAI && typeof landmarksAI.ear === 'number') {
+          const ahora = Date.now();
+          if (landmarksAI.ear < 0.23) {
+            this.ojoCerrado = true;
+          } else if (this.ojoCerrado && landmarksAI.ear > 0.25 && (ahora - this.ultimoParpadeoTimestamp > 350)) {
+            this.ojoCerrado = false;
+            this.contadorParpadeos++;
+            this.ultimoParpadeoTimestamp = ahora;
+          }
+          return {
+            cumplido: this.contadorParpadeos >= 2,
+            progreso: Math.min(100, (this.contadorParpadeos / 2) * 100),
+            feedback: `Parpadeos detectados: ${this.contadorParpadeos}/2`
+          };
+        }
         const res = this.analizarParpadeo(imageData);
         return {
           cumplido: res.parpadeosTotales >= 2,
@@ -233,6 +259,14 @@ export class LivenessEngine {
         };
       }
       case 'GIRO_DERECHA': {
+        if (landmarksAI && typeof landmarksAI.yawRatio === 'number') {
+          const ok = landmarksAI.yawRatio < 0.36;
+          return {
+            cumplido: ok,
+            progreso: ok ? 100 : 35,
+            feedback: ok ? 'Giro a la derecha detectado ✓' : 'Gira suavemente la cabeza hacia la derecha'
+          };
+        }
         const giro = this.analizarGiroCabeza(imageData);
         const ok = giro.direccion === 'DERECHA';
         return {
@@ -242,6 +276,14 @@ export class LivenessEngine {
         };
       }
       case 'GIRO_IZQUIERDA': {
+        if (landmarksAI && typeof landmarksAI.yawRatio === 'number') {
+          const ok = landmarksAI.yawRatio > 0.64;
+          return {
+            cumplido: ok,
+            progreso: ok ? 100 : 35,
+            feedback: ok ? 'Giro a la izquierda detectado ✓' : 'Gira suavemente la cabeza hacia la izquierda'
+          };
+        }
         const giro = this.analizarGiroCabeza(imageData);
         const ok = giro.direccion === 'IZQUIERDA';
         return {
@@ -250,11 +292,26 @@ export class LivenessEngine {
           feedback: ok ? 'Giro a la izquierda detectado ✓' : 'Gira suavemente la cabeza hacia la izquierda'
         };
       }
-      case 'SONREIR':
+      case 'SONREIR': {
+        if (landmarksAI && typeof landmarksAI.sonrisaRatio === 'number') {
+          const ok = landmarksAI.sonrisaRatio > 0.78;
+          return {
+            cumplido: ok,
+            progreso: ok ? 100 : 40,
+            feedback: ok ? 'Sonrisa detectada ✓' : 'Sonríe naturalmente mirando a la cámara'
+          };
+        }
+        const diff = diffActual || this.calcularDiferenciaFotogramas(imageData);
+        const activo = diff.deltaMovimiento > 0.008 && !diff.esErratico;
+        return {
+          cumplido: activo,
+          progreso: activo ? 100 : 40,
+          feedback: activo ? 'Acción detectada satisfactoriamente ✓' : 'Sonríe ligeramente mirando a la cámara'
+        };
+      }
       case 'LECTURA_CODIGO':
       default: {
-        // Validación de micro-movimiento activo y estabilidad en encuadre
-        const diff = this.calcularDiferenciaFotogramas(imageData);
+        const diff = diffActual || this.calcularDiferenciaFotogramas(imageData);
         const activo = diff.deltaMovimiento > 0.008 && !diff.esErratico;
         return {
           cumplido: activo,

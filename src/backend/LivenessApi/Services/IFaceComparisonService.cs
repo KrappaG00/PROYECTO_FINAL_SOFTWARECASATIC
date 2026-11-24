@@ -5,6 +5,7 @@ namespace LivenessApi.Services;
 public interface IFaceComparisonService
 {
     Task<(double ScoreSimilitud, string Clasificacion, string Detalle)> CompararRostrosAsync(
-        string rostroCapturadoBase64, 
-        DocumentoIdentidad documento);
+        string rostroCapturadoBase64,
+        DocumentoIdentidad documento,
+        double[]? embeddingVivo = null);
 }
